@@ -15,6 +15,7 @@ from ocdtv.filescanner import scan
 from ocdtv.transcoder import transcoded
 import ocdtv.tvrage as rage
 import ocdtv.itunes as itunes
+import ocdtv.common as common
 
 
 def get_parser():
@@ -30,6 +31,11 @@ def get_parser():
                       default="AppleTV",
                       help="HandBrake preset to use when transcoding."
                       " Default: AppleTV")
+    parser.add_option("-d", "--destination-file-mask", dest="destfile",
+                      default=None,
+                      help="String format to save the transcoded videos to.  Example: "
+                      "/Media/TV/{show}/S{season}/{m4v_basename}"
+                      "Result: /Media/TV/Prison Break/S1/Prison.Break.S01.E05.SWESUB.DVDRip.XviD-Huzzy.m4v")
     return parser
 
 
@@ -44,10 +50,11 @@ def main():
         directories = (".",)
 
     for (filename, metadata) in transcoded(
-        opts.handbrake, opts.preset, opts.no_act,
+        opts.handbrake, opts.preset, opts.no_act, common.file_renamer(opts.destfile),
         chain.from_iterable(imap(scan, directories))):
         if opts.no_act:
             print "Adding %s to iTunes" % filename
             continue
 
         itunes.add(filename, metadata)
+

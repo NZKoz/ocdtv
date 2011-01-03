@@ -18,15 +18,19 @@ from operator import itemgetter
 from ocdtv.filescanner import is_importable
 
 
-def transcode_file(handbrake, preset, no_act, file_):
+def transcode_file(handbrake, preset, no_act, renamer, file_, metadata):
     """Transcode a file, returning its output path."""
-    output = os.path.splitext(file_)[0] + ".m4v"
+    metadata['m4v_filename'] = os.path.splitext(file_)[0] + ".m4v"
+    metadata['m4v_basename'] = os.path.basename(metadata['m4v_filename'])
+    metadata['filename'] = file_
+
+    output = renamer(metadata)
     spool = tempfile.mkstemp(suffix=".m4v")[1]
     args = (handbrake, "-Z", preset, "-i", file_, "-o", spool)
     logging.debug("Executing: %s", args)
 
     if no_act:
-        print "Skipping transcode of %s" % file_
+        print "Skipping transcode of %s to %s" % (file_, output)
         return output
 
 
@@ -59,9 +63,9 @@ def _compare(file_a, file_b):
             else cmp(file_a, file_b))
 
 
-def transcoded(handbrake, preset, no_act, file_info):
-    """Yield files which have benn transcoded (if necessary)."""
-    transcode = partial(transcode_file, handbrake, preset, no_act)
+def transcoded(handbrake, preset, no_act, renamer, file_info):
+    """Yield files which have been transcoded (if necessary)."""
+    transcode = partial(transcode_file, handbrake, preset, no_act, renamer)
     good_files = []
     for (filename, metadata) in sorted(
         file_info, cmp=_compare, key=itemgetter(0)):
@@ -71,7 +75,7 @@ def transcoded(handbrake, preset, no_act, file_info):
             continue
 
         if not is_importable(filename):
-            filename = transcode(filename)
+            filename = transcode(filename, metadata)
 
         good_files.append(base)
         yield (filename, metadata)

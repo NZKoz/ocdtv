@@ -7,6 +7,7 @@
 """A new Python file"""
 
 import ocdtv.common as common
+import os.path
 
 SHOW_DATA = (
     {'filename': "Prison.Break.S01.E05.SWESUB.DVDRip.XviD-Huzzy.avi",
@@ -82,3 +83,25 @@ def test_similar():
     assert not common.similar("Wire", "Wire In The Blood")
     assert not common.similar("The Wire", "Wire In The Blood")
     assert not common.similar('Big Train', 'Big Ideas for a Small Planet')
+
+def add_m4v_filename(in_metadata):
+    metadata = in_metadata.copy()
+    metadata['m4v_filename'] = os.path.splitext(metadata['filename'])[0] + ".m4v"
+    return metadata
+
+def test_no_format_file_renamer():
+    metadata = add_m4v_filename(SHOW_DATA[0])
+
+    renamer = common.file_renamer(None)
+
+    assert metadata['m4v_filename'] == renamer(metadata), \
+            "Renamed incorrectly, %s != %s" % (metadata['m4v_filename'], renamer(metadata))
+
+def test_format_file_renamer():
+    metadata = add_m4v_filename(SHOW_DATA[0])
+
+    renamer = common.file_renamer("/Media/TV/{show}/S{season}/{m4v_filename}")
+
+    assert "/Media/TV/Prison Break/S01/Prison.Break.S01.E05.SWESUB.DVDRip.XviD-Huzzy.m4v" == renamer(metadata), \
+        "Renamed incorrectly %s" % (renamer(metadata))
+

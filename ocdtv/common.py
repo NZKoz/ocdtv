@@ -64,3 +64,11 @@ def season_episode(filename):
         if data:
             groups = data.groupdict()
             return (int(groups['season']), int(groups['episode']))
+
+def file_renamer(format_string):
+    if format_string == None:
+        return lambda metadata: metadata['m4v_filename']
+    else:
+        def renamer_function(metadata):
+            return format_string.format(**metadata)
+        return renamer_function
