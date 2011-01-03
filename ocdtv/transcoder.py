@@ -7,6 +7,7 @@
 """Transcode files."""
 
 import os
+import shutil
 import time
 import logging
 import tempfile
@@ -44,7 +45,7 @@ def transcode_file(handbrake, preset, no_act, renamer, file_, metadata):
         except:
             pass
         raise ex
-    os.rename(spool, output)
+    shutil.move(spool, output)
     logging.debug("Transcoded %s in %ds" % (os.path.basename(file_),
                                             time.time() - st))
     return output
