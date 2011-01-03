@@ -76,7 +76,7 @@ def transcoded(handbrake, preset, no_act, renamer, file_info):
             continue
 
         if not is_importable(filename):
-            filename = transcode(filename, metadata)
+            filename = transcode(filename, metadata.copy())
 
         good_files.append(base)
         yield (filename, metadata)
